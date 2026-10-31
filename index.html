@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Migraines">
+<meta name="theme-color" content="#ffffff">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="stylesheet" href="styles.css">
+<title>Journal des migraines</title>
+</head>
+<body>
+<header class="topbar"><h1 id="title">Nouvelle crise</h1></header>
+
+<main>
+<!-- ============ FORMULAIRE ============ -->
+<section id="view-form" class="view active">
+  <form id="form" novalidate>
+    <div class="card">
+      <h2>Quand ?</h2>
+      <label class="field">Début<input type="datetime-local" id="f-start" required></label>
+      <label class="field">Fin<input type="datetime-local" id="f-end"></label>
+      <p class="hint">Laisse la fin vide si la crise est toujours en cours.</p>
+      <label class="field">Intensité : <strong><span id="f-int-val">5</span>/10</strong>
+        <input type="range" id="f-intensity" min="1" max="10" value="5">
+      </label>
+      <div class="scale"><span>1 Légère</span><span>5 Modérée</span><span>10 Insupportable</span></div>
+    </div>
+
+    <div class="card">
+      <h2>Douleur et symptômes</h2>
+      <div class="field"><span class="lbl">Localisation</span><div class="chips" data-key="location" data-multi></div></div>
+      <div class="field"><span class="lbl">Type de douleur</span><div class="chips" data-key="painType" data-multi></div></div>
+      <div class="field"><span class="lbl">Aura</span><div class="chips" data-key="aura"></div></div>
+      <div class="field"><span class="lbl">Symptômes associés</span><div class="chips" data-key="symptoms" data-multi></div></div>
+    </div>
+
+    <div class="card">
+      <h2>Contexte</h2>
+      <div class="field"><span class="lbl">Niveau de stress (1 = calme, 5 = très élevé)</span><div class="chips" data-key="stress"></div></div>
+      <div class="field"><span class="lbl">Type de journée</span><div class="chips" data-key="workDay"></div></div>
+      <div class="row2">
+        <label class="field">Sommeil la nuit précédente (h)<input type="number" id="f-sleep" min="0" max="24" step="0.5" inputmode="decimal"></label>
+        <label class="field">Caféine (tasses dans la journée)<input type="number" id="f-caffeine" min="0" max="20" step="1" inputmode="numeric"></label>
+      </div>
+      <div class="field"><span class="lbl">Qualité du sommeil (1 = mauvaise, 5 = excellente)</span><div class="chips" data-key="sleepQuality"></div></div>
+      <div class="field"><span class="lbl">Activité physique récente</span><div class="chips" data-key="exercise"></div></div>
+      <label class="field">Il y a combien d'heures ?<input type="number" id="f-exercise-h" min="0" max="72" step="1" inputmode="numeric"></label>
+      <div class="field"><span class="lbl">Hydratation</span><div class="chips" data-key="hydration"></div></div>
+      <div class="field"><span class="lbl">Temps d'écran</span><div class="chips" data-key="screens"></div></div>
+      <div class="row2">
+        <div class="field"><span class="lbl">Alcool (24 h)</span><div class="chips" data-key="alcohol"></div></div>
+        <div class="field"><span class="lbl">Repas sauté</span><div class="chips" data-key="skippedMeal"></div></div>
+      </div>
+      <div class="field" id="cycle-field" hidden><span class="lbl">Cycle menstruel</span><div class="chips" data-key="cycle"></div></div>
+      <div class="field"><span class="lbl">Déclencheurs suspectés</span><div class="chips" data-key="triggers" data-multi></div></div>
+    </div>
+
+    <div class="card">
+      <h2>Météo</h2>
+      <button type="button" class="btn secondary" id="btn-weather">📍 Récupérer la météo (position + heure de début)</button>
+      <p class="hint" id="w-status" aria-live="polite">La météo est récupérée automatiquement. Tu peux ajuster chaque valeur.</p>
+      <label class="field">Lieu<input type="text" id="w-place" placeholder="Ville"></label>
+      <label class="field">Conditions<select id="w-cond"></select></label>
+      <div class="row2">
+        <label class="field">Température (°C)<input type="number" id="w-temp" step="0.1" inputmode="decimal"></label>
+        <label class="field">Humidité (%)<input type="number" id="w-hum" min="0" max="100" step="1" inputmode="numeric"></label>
+      </div>
+      <div class="row2">
+        <label class="field">Pression (hPa)<input type="number" id="w-press" step="0.1" inputmode="decimal"></label>
+        <label class="field">Variation pression 24 h (hPa)<input type="number" id="w-delta" step="0.1" inputmode="decimal"></label>
+      </div>
+      <label class="field">Vent (km/h)<input type="number" id="w-wind" step="0.1" inputmode="decimal"></label>
+    </div>
+
+    <div class="card">
+      <h2>Traitement</h2>
+      <label class="field">Médicament(s) et dose<input type="text" id="f-med" placeholder="ex. Ibuprofène 400 mg"></label>
+      <label class="field">Pris combien de minutes après le début ?<input type="number" id="f-med-delay" min="0" step="5" inputmode="numeric"></label>
+      <div class="field"><span class="lbl">Efficacité</span><div class="chips" data-key="medEfficacy"></div></div>
+    </div>
+
+    <div class="card">
+      <h2>Notes</h2>
+      <textarea id="f-notes" rows="3" placeholder="Tout autre élément utile…"></textarea>
+    </div>
+
+    <div class="actions">
+      <button type="submit" class="btn primary" id="btn-save">Enregistrer la crise</button>
+      <button type="button" class="btn ghost" id="btn-cancel" hidden>Annuler la modification</button>
+      <button type="button" class="btn danger" id="btn-delete" hidden>Supprimer cette crise</button>
+    </div>
+    <p class="msg" id="form-msg" aria-live="polite"></p>
+  </form>
+</section>
+
+<!-- ============ CALENDRIER ============ -->
+<section id="view-calendar" class="view">
+  <div class="card">
+    <div class="cal-head">
+      <button type="button" class="btn icon" id="cal-prev" aria-label="Mois précédent">‹</button>
+      <h2 id="cal-title"></h2>
+      <button type="button" class="btn icon" id="cal-next" aria-label="Mois suivant">›</button>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+    <div class="legend">
+      <span><i class="lvl1"></i>Légère (1-3)</span><span><i class="lvl2"></i>Modérée (4-6)</span><span><i class="lvl3"></i>Sévère (7-10)</span>
+    </div>
+    <p class="hint" id="cal-summary"></p>
+  </div>
+  <div id="cal-day"></div>
+</section>
+
+<!-- ============ RAPPORT ============ -->
+<section id="view-report" class="view">
+  <div class="card no-print">
+    <label class="field">Période
+      <select id="r-period">
+        <option value="30">30 derniers jours</option>
+        <option value="90" selected>3 derniers mois</option>
+        <option value="180">6 derniers mois</option>
+        <option value="365">12 derniers mois</option>
+        <option value="all">Tout l'historique</option>
+      </select>
+    </label>
+    <button type="button" class="btn secondary" id="btn-print">🖨️ Imprimer / PDF (pour le médecin)</button>
+  </div>
+  <div id="report"></div>
+</section>
+
+<!-- ============ HISTORIQUE & RÉGLAGES ============ -->
+<section id="view-history" class="view">
+  <div id="history"></div>
+  <div class="card">
+    <h2>Données et réglages</h2>
+    <label class="check"><input type="checkbox" id="s-cycle"> Suivre le cycle menstruel</label>
+    <p class="hint">Les données restent uniquement sur ce téléphone. Exporte-les régulièrement pour les sauvegarder.</p>
+    <div class="actions">
+      <button type="button" class="btn secondary" id="btn-export-json">Exporter (sauvegarde JSON)</button>
+      <button type="button" class="btn secondary" id="btn-export-csv">Exporter pour Excel (CSV)</button>
+      <label class="btn secondary file-btn">Importer une sauvegarde JSON<input type="file" id="f-import" accept=".json,application/json"></label>
+      <button type="button" class="btn danger" id="btn-wipe">Tout effacer</button>
+    </div>
+    <p class="msg" id="data-msg" aria-live="polite"></p>
+  </div>
+</section>
+</main>
+
+<nav class="tabbar">
+  <button type="button" data-view="form" class="active"><span>➕</span>Saisie</button>
+  <button type="button" data-view="calendar"><span>📅</span>Calendrier</button>
+  <button type="button" data-view="report"><span>📊</span>Rapport</button>
+  <button type="button" data-view="history"><span>📋</span>Historique</button>
+</nav>
+
+<script src="app.js"></script>
+</body>
+</html>
